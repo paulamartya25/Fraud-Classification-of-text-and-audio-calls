@@ -134,9 +134,14 @@ with tab1:
                     else:  # Hindi or Telugu
                         model = get_sms_model(language)
                         pred = model.predict([sms_input])[0]
-                        label = "🚨 FRAUD" if pred == 1 or pred == "fraud" else "✅ NORMAL"
+                        # Note: Labels are reversed in dataset ('fraud'=normal, 'real'=actually fraud)
+                        # Fix: Invert the prediction logic
+                        label = "🚨 FRAUD" if pred == "real" or pred == 1 else "✅ NORMAL"
                         
-                        st.success(f"Prediction: {label}")
+                        if "FRAUD" in label:
+                            st.error(f"Prediction: {label}")
+                        else:
+                            st.success(f"Prediction: {label}")
                         st.info(f"Language: {language.upper()} | Model Status: Ready")
                 
                 except Exception as e:
