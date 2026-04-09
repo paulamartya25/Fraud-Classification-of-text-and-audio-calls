@@ -8,16 +8,6 @@ import numpy as np
 import speech_recognition as sr
 from typing import Tuple, Any
 
-# Try to import TensorFlow (optional - for Call classification)
-try:
-    from tensorflow.keras.models import load_model
-    from tensorflow.keras.preprocessing.sequence import pad_sequences
-    TENSORFLOW_AVAILABLE = True
-except ImportError:
-    TENSORFLOW_AVAILABLE = False
-    load_model = None
-    pad_sequences = None
-
 from utils import (
     classify_english_message,
     classify_english_audio,
@@ -42,15 +32,11 @@ def load_english_sms_model_improved() -> Tuple[Any, Any, bool]:
 
 @st.cache_resource
 def load_english_call_model_improved() -> Tuple[Any, Any, bool]:
-    """Load improved English Call model with optimal configuration"""
-    if not TENSORFLOW_AVAILABLE:
-        st.warning("⚠️ TensorFlow not available. Call classification disabled.")
-        return None, None, False  # type: ignore
+    """Load improved English Call model (Logistic Regression + TF-IDF)"""
     try:
-        model = load_model('english_call_model_improved.h5')
-        with open('english_call_tokenizer_improved.pkl', 'rb') as f:
-            tokenizer = pickle.load(f)
-        return model, tokenizer, True
+        model = joblib.load('english_call_model_sklearn.pkl')
+        vectorizer = joblib.load('english_call_vectorizer.pkl')
+        return model, vectorizer, True
     except FileNotFoundError:
         st.warning("⚠️ Improved Call model not found. Please ensure model files exist.")
         return None, None, False  # type: ignore
@@ -88,15 +74,11 @@ def load_hindi_call_model_improved() -> Tuple[Any, Any, bool]:
 
 @st.cache_resource
 def load_telugu_call_model_improved() -> Tuple[Any, Any, bool]:
-    """Load improved Telugu Call model (LSTM + Tokenizer)"""
-    if not TENSORFLOW_AVAILABLE:
-        st.warning("⚠️ TensorFlow not available. Call classification disabled.")
-        return None, None, False  # type: ignore
+    """Load improved Telugu Call model (Logistic Regression + TF-IDF)"""
     try:
-        model = load_model('telugu_call_model_improved.h5')
-        with open('telugu_call_tokenizer_improved.pkl', 'rb') as f:
-            tokenizer = pickle.load(f)
-        return model, tokenizer, True
+        model = joblib.load('telugu_call_model_sklearn.pkl')
+        vectorizer = joblib.load('telugu_call_vectorizer.pkl')
+        return model, vectorizer, True
     except FileNotFoundError:
         st.warning("⚠️ Improved Telugu Call model not found.")
         return None, None, False  # type: ignore
@@ -276,15 +258,14 @@ with tab2:
                             # Now classify the transcript
                             if call_language == "english":
                                 # Load improved English Call Model
-                                model, tokenizer, success = load_english_call_model_improved()
+                                model, vectorizer, success = load_english_call_model_improved()
                                 
-                                if success and model is not None and tokenizer is not None:
-                                    # Prepare text
-                                    seq = tokenizer.texts_to_sequences([call_transcript])
-                                    padded = pad_sequences(seq, maxlen=100, padding='post')
+                                if success and model is not None and vectorizer is not None:
+                                    # Vectorize text
+                                    text_vec = vectorizer.transform([call_transcript])
                                     
                                     # Predict
-                                    probability = model.predict(padded)[0][0]
+                                    probability = model.predict_proba(text_vec)[0][1]
                                     
                                     # OPTIMAL THRESHOLD: 0.35 (improved from 0.5)
                                     OPTIMAL_THRESHOLD_CALL = 0.35
@@ -342,15 +323,14 @@ with tab2:
                             
                             else:  # telugu
                                 # Load improved Telugu Call Model
-                                model, tokenizer, success = load_telugu_call_model_improved()
+                                model, vectorizer, success = load_telugu_call_model_improved()
                                 
-                                if success and model is not None and tokenizer is not None:
-                                    # Prepare text
-                                    seq = tokenizer.texts_to_sequences([call_transcript])
-                                    padded = pad_sequences(seq, maxlen=100, padding='post')
+                                if success and model is not None and vectorizer is not None:
+                                    # Vectorize text
+                                    text_vec = vectorizer.transform([call_transcript])
                                     
                                     # Predict
-                                    probability = model.predict(padded)[0][0]
+                                    probability = model.predict_proba(text_vec)[0][1]
                                     is_fraud = probability >= 0.5
                                     label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
                                     
