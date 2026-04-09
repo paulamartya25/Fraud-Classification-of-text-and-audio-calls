@@ -105,7 +105,11 @@ def train_or_load_sms_model(df, language):
         return joblib.load(filename)
 
     X = df['Text']
-    y = df['Label']
+    y = df['Label'].copy()
+    
+    # Normalize labels: 'fraud' or 1 = 1, 'real' or 0 = 0
+    y = y.apply(lambda x: 1 if (x == 'fraud' or x == 1) else 0)
+    
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     model = Pipeline([

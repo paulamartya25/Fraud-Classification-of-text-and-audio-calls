@@ -146,9 +146,9 @@ with tab1:
                     else:  # Hindi or Telugu
                         model = get_sms_model(language)
                         pred = model.predict([sms_input])[0]
-                        # Note: Labels are reversed in dataset ('fraud'=normal, 'real'=actually fraud)
-                        # Fix: Invert the prediction logic
-                        label = "🚨 FRAUD" if pred == "real" or pred == 1 else "✅ NORMAL"
+                        # After label normalization in utils.py: fraud=1, normal=0
+                        is_fraud = pred == 1
+                        label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
                         
                         if "FRAUD" in label:
                             st.error(f"Prediction: {label}")
