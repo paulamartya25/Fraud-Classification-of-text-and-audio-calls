@@ -202,168 +202,155 @@ with tab1:
 with tab2:
     st.subheader("📞 Call Transcript Classification")
     
-    if not TENSORFLOW_AVAILABLE:
-        st.error("""
-        ⚠️ **Call Classification Disabled**
-        
-        TensorFlow is not available in the current environment.
-        
-        **Available on Streamlit Cloud with local deployment** - The Call classification requires TensorFlow which needs Python 3.11.x support.
-        
-        ✅ **SMS Classification is fully available** - Please use the SMS tab to classify messages.
-        """)
-    else:
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            call_language = st.selectbox("Choose call language", ["english", "hindi", "telugu"], key="call_lang")
-        
-        with col2:
-            st.metric("Model Status", "✅ Ready", delta="100% Accuracy")
-        
-        # Audio file upload
-        st.subheader("📁 Upload Audio File")
-        audio_file = st.file_uploader("Choose an audio file (.wav, .mp3, .ogg, .flac)", 
-                                       type=["wav", "mp3", "ogg", "flac"],
-                                       help="Upload a call recording to analyze")
-        
-        if st.button("🔍 Analyze Call Recording", key="classify_call"):
-            if audio_file is None:
-                st.warning("⚠️ Please upload an audio file to analyze.")
-            else:
-                with st.spinner("🔄 Processing audio file and recognizing speech..."):
-                    try:
-                        # Save uploaded file temporarily
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-                            tmp_file.write(audio_file.getbuffer())
-                            tmp_path = tmp_file.name
-                        
-                        try:
-                            # Recognize speech from audio
-                            recognizer = sr.Recognizer()
-                            with sr.AudioFile(tmp_path) as source:
-                                audio_data = recognizer.record(source)
-                            
-                            # Recognize speech based on selected language
-                            if call_language == "english":
-                                call_transcript = recognizer.recognize_google(audio_data, language="en-US")
-                            elif call_language == "hindi":
-                                call_transcript = recognizer.recognize_google(audio_data, language="hi-IN")
-                            else:  # telugu
-                                call_transcript = recognizer.recognize_google(audio_data, language="te-IN")
-                            
-                            st.success(f"✅ Speech recognized successfully!")
-                            st.info(f"**Transcribed Text:** {call_transcript}")
-                            
-                            # Now classify the transcript
-                            if call_language == "english":
-                                # Load improved English Call Model
-                                model, vectorizer, success = load_english_call_model_improved()
-                                
-                                if success and model is not None and vectorizer is not None:
-                                    # Vectorize text
-                                    text_vec = vectorizer.transform([call_transcript])
-                                    
-                                    # Predict
-                                    probability = model.predict_proba(text_vec)[0][1]
-                                    
-                                    # OPTIMAL THRESHOLD: 0.35 (improved from 0.5)
-                                    OPTIMAL_THRESHOLD_CALL = 0.35
-                                    is_fraud = probability >= OPTIMAL_THRESHOLD_CALL
-                                    label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
-                                    
-                                    # Display results
-                                    col1, col2, col3 = st.columns(3)
-                                    
-                                    with col1:
-                                        if "FRAUD" in label:
-                                            st.error(f"Prediction: {label}")
-                                        else:
-                                            st.success(f"Prediction: {label}")
-                                    
-                                    with col2:
-                                        st.metric("Fraud Probability", f"{probability:.1%}")
-                                    
-                                    with col3:
-                                        st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
-                                
-                                else:
-                                    st.error("Could not load improved English Call model.")
-                            
-                            elif call_language == "hindi":
-                                # Load improved Hindi Call Model
-                                model, vectorizer, success = load_hindi_call_model_improved()
-                                
-                                if success and model is not None and vectorizer is not None:
-                                    # Vectorize text
-                                    text_vec = vectorizer.transform([call_transcript])
-                                    
-                                    # Predict
-                                    probability = model.predict_proba(text_vec)[0][1]
-                                    is_fraud = probability >= 0.5
-                                    label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
-                                    
-                                    # Display results
-                                    col1, col2, col3 = st.columns(3)
-                                    
-                                    with col1:
-                                        if "FRAUD" in label:
-                                            st.error(f"Prediction: {label}")
-                                        else:
-                                            st.success(f"Prediction: {label}")
-                                    
-                                    with col2:
-                                        st.metric("Fraud Probability", f"{probability:.1%}")
-                                    
-                                    with col3:
-                                        st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
-                                    
-                                else:
-                                    st.error("Could not load improved Hindi Call model.")
-                            
-                            else:  # telugu
-                                # Load improved Telugu Call Model
-                                model, vectorizer, success = load_telugu_call_model_improved()
-                                
-                                if success and model is not None and vectorizer is not None:
-                                    # Vectorize text
-                                    text_vec = vectorizer.transform([call_transcript])
-                                    
-                                    # Predict
-                                    probability = model.predict_proba(text_vec)[0][1]
-                                    is_fraud = probability >= 0.5
-                                    label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
-                                    
-                                    # Display results
-                                    col1, col2, col3 = st.columns(3)
-                                    
-                                    with col1:
-                                        if "FRAUD" in label:
-                                            st.error(f"Prediction: {label}")
-                                        else:
-                                            st.success(f"Prediction: {label}")
-                                    
-                                    with col2:
-                                        st.metric("Fraud Probability", f"{probability:.1%}")
-                                    
-                                    with col3:
-                                        st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
-                                    
-                                else:
-                                    st.error("Could not load improved Telugu Call model.")
-                        
-                        except sr.UnknownValueError:
-                            st.error("❌ Could not understand the audio. Please ensure the audio quality is clear.")
-                        except sr.RequestError as e:
-                            st.error(f"❌ Speech recognition error: {str(e)}")
-                        finally:
-                            # Clean up temporary file
-                            import os
-                            if os.path.exists(tmp_path):
-                                os.remove(tmp_path)
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        call_language = st.selectbox("Choose call language", ["english", "hindi", "telugu"], key="call_lang")
+    
+    with col2:
+        st.metric("Model Status", "✅ Ready", delta="100% Accuracy")
+    
+    # Audio file upload
+    st.subheader("📁 Upload Audio File")
+    audio_file = st.file_uploader("Choose an audio file (.wav, .mp3, .ogg, .flac)", 
+                                   type=["wav", "mp3", "ogg", "flac"],
+                                   help="Upload a call recording to analyze")
+    
+    if st.button("🔍 Analyze Call Recording", key="classify_call"):
+        if audio_file is None:
+            st.warning("⚠️ Please upload an audio file to analyze.")
+        else:
+            with st.spinner("🔄 Processing audio file and recognizing speech..."):
+                try:
+                    # Save uploaded file temporarily
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                        tmp_file.write(audio_file.getbuffer())
+                        tmp_path = tmp_file.name
                     
-                    except Exception as e:
-                        st.error(f"❌ Error processing audio file: {str(e)}")
+                    # Recognize speech from audio
+                    recognizer = sr.Recognizer()
+                    with sr.AudioFile(tmp_path) as source:
+                        audio_data = recognizer.record(source)
+                    
+                    # Recognize speech based on selected language
+                    if call_language == "english":
+                        call_transcript = recognizer.recognize_google(audio_data, language="en-US")
+                    elif call_language == "hindi":
+                        call_transcript = recognizer.recognize_google(audio_data, language="hi-IN")
+                    else:  # telugu
+                        call_transcript = recognizer.recognize_google(audio_data, language="te-IN")
+                    
+                    st.success(f"✅ Speech recognized successfully!")
+                    st.info(f"**Transcribed Text:** {call_transcript}")
+                    
+                    # Now classify the transcript
+                    if call_language == "english":
+                        # Load improved English Call Model
+                        model, vectorizer, success = load_english_call_model_improved()
+                        
+                        if success and model is not None and vectorizer is not None:
+                            # Vectorize text
+                            text_vec = vectorizer.transform([call_transcript])
+                            
+                            # Predict
+                            probability = model.predict_proba(text_vec)[0][1]
+                            
+                            # OPTIMAL THRESHOLD: 0.35 (improved from 0.5)
+                            OPTIMAL_THRESHOLD_CALL = 0.35
+                            is_fraud = probability >= OPTIMAL_THRESHOLD_CALL
+                            label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                            
+                            # Display results
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if "FRAUD" in label:
+                                    st.error(f"Prediction: {label}")
+                                else:
+                                    st.success(f"Prediction: {label}")
+                            
+                            with col2:
+                                st.metric("Fraud Probability", f"{probability:.1%}")
+                            
+                            with col3:
+                                st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                        
+                        else:
+                            st.error("Could not load improved English Call model.")
+                    
+                    elif call_language == "hindi":
+                        # Load improved Hindi Call Model
+                        model, vectorizer, success = load_hindi_call_model_improved()
+                        
+                        if success and model is not None and vectorizer is not None:
+                            # Vectorize text
+                            text_vec = vectorizer.transform([call_transcript])
+                            
+                            # Predict
+                            probability = model.predict_proba(text_vec)[0][1]
+                            is_fraud = probability >= 0.5
+                            label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                            
+                            # Display results
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if "FRAUD" in label:
+                                    st.error(f"Prediction: {label}")
+                                else:
+                                    st.success(f"Prediction: {label}")
+                            
+                            with col2:
+                                st.metric("Fraud Probability", f"{probability:.1%}")
+                            
+                            with col3:
+                                st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                            
+                        else:
+                            st.error("Could not load improved Hindi Call model.")
+                    
+                    else:  # telugu
+                        # Load improved Telugu Call Model
+                        model, vectorizer, success = load_telugu_call_model_improved()
+                        
+                        if success and model is not None and vectorizer is not None:
+                            # Vectorize text
+                            text_vec = vectorizer.transform([call_transcript])
+                            
+                            # Predict
+                            probability = model.predict_proba(text_vec)[0][1]
+                            is_fraud = probability >= 0.5
+                            label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                            
+                            # Display results
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if "FRAUD" in label:
+                                    st.error(f"Prediction: {label}")
+                                else:
+                                    st.success(f"Prediction: {label}")
+                            
+                            with col2:
+                                st.metric("Fraud Probability", f"{probability:.1%}")
+                            
+                            with col3:
+                                st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                            
+                        else:
+                            st.error("Could not load improved Telugu Call model.")
+                
+                except sr.UnknownValueError:
+                    st.error("❌ Could not understand the audio. Please ensure the audio quality is clear.")
+                except sr.RequestError as e:
+                    st.error(f"❌ Speech recognition error: {str(e)}")
+                except Exception as e:
+                    st.error(f"❌ Error processing audio file: {str(e)}")
+                finally:
+                    # Clean up temporary file
+                    import os
+                    if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
 
 # Footer
 st.markdown("---")
