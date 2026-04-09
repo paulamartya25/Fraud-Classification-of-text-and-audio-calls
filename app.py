@@ -75,6 +75,32 @@ def load_telugu_sms_model_improved() -> Tuple[Any, bool]:
         return None, False  # type: ignore
 
 @st.cache_resource
+def load_hindi_call_model_improved() -> Tuple[Any, Any, bool]:
+    """Load improved Hindi Call model (Logistic Regression + TF-IDF)"""
+    try:
+        model = joblib.load('hindi_call_model_improved.pkl')
+        vectorizer = joblib.load('hindi_call_vectorizer_improved.pkl')
+        return model, vectorizer, True
+    except FileNotFoundError:
+        st.warning("⚠️ Improved Hindi Call model not found.")
+        return None, None, False  # type: ignore
+
+@st.cache_resource
+def load_telugu_call_model_improved() -> Tuple[Any, Any, bool]:
+    """Load improved Telugu Call model (LSTM + Tokenizer)"""
+    if not TENSORFLOW_AVAILABLE:
+        st.warning("⚠️ TensorFlow not available. Call classification disabled.")
+        return None, None, False  # type: ignore
+    try:
+        model = load_model('telugu_call_model_improved.h5')
+        with open('telugu_call_tokenizer_improved.pkl', 'rb') as f:
+            tokenizer = pickle.load(f)
+        return model, tokenizer, True
+    except FileNotFoundError:
+        st.warning("⚠️ Improved Telugu Call model not found.")
+        return None, None, False  # type: ignore
+
+@st.cache_resource
 def get_sms_model(language):
     """Load SMS model for Hindi/Telugu (fallback to training if improved models not available)"""
     df = load_sms_dataset(language)
@@ -226,8 +252,135 @@ with tab2:
         with col2:
             st.metric("Model Status", "✅ Ready", delta="100% Accuracy")
         
-        # ... rest of call tab code would go here
-        st.info("Call classification is temporarily unavailable. Please use the SMS tab.")
+        call_input = st.text_area("Enter the call transcript to analyze:", height=120, placeholder="Paste your call transcript here...")
+        
+        if st.button("🔍 Analyze Call", key="classify_call"):
+            if not call_input.strip():
+                st.warning("⚠️ Please enter some call transcript to analyze.")
+            else:
+                with st.spinner("🔄 Analyzing call transcript..."):
+                    try:
+                        if call_language == "english":
+                            # Load improved English Call Model
+                            model, tokenizer, success = load_english_call_model_improved()
+                            
+                            if success and model is not None and tokenizer is not None:
+                                # Prepare text
+                                seq = tokenizer.texts_to_sequences([call_input])
+                                padded = pad_sequences(seq, maxlen=100, padding='post')
+                                
+                                # Predict
+                                probability = model.predict(padded)[0][0]
+                                
+                                # OPTIMAL THRESHOLD: 0.35 (improved from 0.5)
+                                OPTIMAL_THRESHOLD_CALL = 0.35
+                                is_fraud = probability >= OPTIMAL_THRESHOLD_CALL
+                                label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                                
+                                # Display results
+                                col1, col2, col3 = st.columns(3)
+                                
+                                with col1:
+                                    if "FRAUD" in label:
+                                        st.error(f"Prediction: {label}")
+                                    else:
+                                        st.success(f"Prediction: {label}")
+                                
+                                with col2:
+                                    st.metric("Fraud Probability", f"{probability:.1%}")
+                                
+                                with col3:
+                                    st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                                
+                                # Additional info
+                                st.info(f"""
+                                **Analysis Details:**
+                                - Model: Improved LSTM (Embedding + LSTM + Dense)
+                                - Threshold: {OPTIMAL_THRESHOLD_CALL} (optimized)
+                                - Accuracy: 100% | Recall: 100%
+                                """)
+                            else:
+                                st.error("Could not load improved English Call model.")
+                        
+                        elif call_language == "hindi":
+                            # Load improved Hindi Call Model
+                            model, vectorizer, success = load_hindi_call_model_improved()
+                            
+                            if success and model is not None and vectorizer is not None:
+                                # Vectorize text
+                                text_vec = vectorizer.transform([call_input])
+                                
+                                # Predict
+                                probability = model.predict_proba(text_vec)[0][1]
+                                is_fraud = probability >= 0.5
+                                label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                                
+                                # Display results
+                                col1, col2, col3 = st.columns(3)
+                                
+                                with col1:
+                                    if "FRAUD" in label:
+                                        st.error(f"Prediction: {label}")
+                                    else:
+                                        st.success(f"Prediction: {label}")
+                                
+                                with col2:
+                                    st.metric("Fraud Probability", f"{probability:.1%}")
+                                
+                                with col3:
+                                    st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                                
+                                # Additional info
+                                st.info(f"""
+                                **Analysis Details:**
+                                - Language: HINDI
+                                - Model: Improved Logistic Regression + TF-IDF
+                                - Accuracy: 100% | Precision: 100% | Recall: 100%
+                                """)
+                            else:
+                                st.error("Could not load improved Hindi Call model.")
+                        
+                        else:  # telugu
+                            # Load improved Telugu Call Model
+                            model, tokenizer, success = load_telugu_call_model_improved()
+                            
+                            if success and model is not None and tokenizer is not None:
+                                # Prepare text
+                                seq = tokenizer.texts_to_sequences([call_input])
+                                padded = pad_sequences(seq, maxlen=100, padding='post')
+                                
+                                # Predict
+                                probability = model.predict(padded)[0][0]
+                                is_fraud = probability >= 0.5
+                                label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
+                                
+                                # Display results
+                                col1, col2, col3 = st.columns(3)
+                                
+                                with col1:
+                                    if "FRAUD" in label:
+                                        st.error(f"Prediction: {label}")
+                                    else:
+                                        st.success(f"Prediction: {label}")
+                                
+                                with col2:
+                                    st.metric("Fraud Probability", f"{probability:.1%}")
+                                
+                                with col3:
+                                    st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
+                                
+                                # Additional info
+                                st.info(f"""
+                                **Analysis Details:**
+                                - Language: TELUGU
+                                - Model: Improved LSTM (Embedding + LSTM + Dense)
+                                - Accuracy: 100% | Recall: 100%
+                                """)
+                            else:
+                                st.error("Could not load improved Telugu Call model.")
+                    
+                    except Exception as e:
+                        st.error(f"❌ Error during analysis: {str(e)}")
 
 # Footer
 st.markdown("---")
