@@ -1,0 +1,31 @@
+{
+  "python.defaultInterpreterPath": "C:\\Python313\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:\\Users\\amart\\AppData\\Roaming\\Python\\Python313\\site-packages"
+  ],
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticMode": "workspace",
+  "pylance.analysis.typeCheckingMode": "off",
+  "cSpell.words": [
+    "vectorizer",
+    "proba",
+    "LSTM",
+    "keras",
+    "joblib",
+    "imblearn",
+    "SMOTE",
+    "MNIST",
+    "Tfidf",
+    "Vectorizer",
+    "Multinomial",
+    "ngram",
+    "maxlen",
+    "crossentropy",
+    "hyperparameters",
+    "selectbox",
+    "overfitting",
+    "underfitting",
+    "sklearn",
+    "scikit"
+  ]
+}

@@ -1,0 +1,3 @@
+Model,Accuracy,Precision,Recall,F1,ROC-AUC,Improvements
+English SMS,1.0,1.0,1.0,1.0,1.0,SMOTE + Class Weights + Optimal Threshold
+English Call,1.0,1.0,1.0,1.0,1.0,SMOTE + Class Weights + Optimal Hyperparameters + Threshold
