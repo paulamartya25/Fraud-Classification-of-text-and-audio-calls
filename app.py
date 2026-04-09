@@ -118,11 +118,6 @@ Classify communications as **Fraud** or **Normal** in English, Hindi, and Telugu
 - 📞 Call Transcript Analysis (English, Hindi, Telugu)
 - 🎯 Confidence Scores for Each Prediction
 - 🔄 Real-time Processing
-
-**📊 Model Performance:**
-- English SMS: 100% Accuracy | 100% Recall
-- English Call: 100% Accuracy | 100% Recall
-- Hindi & Telugu: 100% Accuracy on All Tasks
 """)
 
 st.markdown("---")
@@ -179,13 +174,7 @@ with tab1:
                             with col3:
                                 st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                             
-                            # Additional info
-                            st.info(f"""
-                            **Analysis Details:**
-                            - Model: Improved Naive Bayes + TF-IDF
-                            - Threshold: {OPTIMAL_THRESHOLD_SMS} (optimized)
-                            - Accuracy: 100% | Recall: 100%
-                            """)
+
                         else:
                             st.error("Could not load improved English SMS model.")
                     
@@ -219,14 +208,7 @@ with tab1:
                             with col3:
                                 st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                             
-                            # Additional info
-                            st.info(f"""
-                            **Analysis Details:**
-                            - Language: {language.upper()}
-                            - Model: Improved Naive Bayes + TF-IDF
-                            - Threshold: {OPTIMAL_THRESHOLD_HINDI_TELUGU_SMS} (optimized)
-                            - Accuracy: 100% | Precision: 100% | Recall: 100%
-                            """)
+
                         else:
                             st.error(f"Could not load improved {language.upper()} SMS model.")
                 
@@ -296,13 +278,7 @@ with tab2:
                                 with col3:
                                     st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                                 
-                                # Additional info
-                                st.info(f"""
-                                **Analysis Details:**
-                                - Model: Improved LSTM (Embedding + LSTM + Dense)
-                                - Threshold: {OPTIMAL_THRESHOLD_CALL} (optimized)
-                                - Accuracy: 100% | Recall: 100%
-                                """)
+
                             else:
                                 st.error("Could not load improved English Call model.")
                         
@@ -334,13 +310,7 @@ with tab2:
                                 with col3:
                                     st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                                 
-                                # Additional info
-                                st.info(f"""
-                                **Analysis Details:**
-                                - Language: HINDI
-                                - Model: Improved Logistic Regression + TF-IDF
-                                - Accuracy: 100% | Precision: 100% | Recall: 100%
-                                """)
+
                             else:
                                 st.error("Could not load improved Hindi Call model.")
                         
@@ -373,13 +343,7 @@ with tab2:
                                 with col3:
                                     st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                                 
-                                # Additional info
-                                st.info(f"""
-                                **Analysis Details:**
-                                - Language: TELUGU
-                                - Model: Improved LSTM (Embedding + LSTM + Dense)
-                                - Accuracy: 100% | Recall: 100%
-                                """)
+
                             else:
                                 st.error("Could not load improved Telugu Call model.")
                     
@@ -391,6 +355,5 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center'>
     <p><b>🛡️ Fraud Detection System</b> | Powered by Advanced ML Models</p>
-    <p><small>English Models: 100% Accuracy | Hindi & Telugu: 100% Accuracy</small></p>
 </div>
 """, unsafe_allow_html=True)
