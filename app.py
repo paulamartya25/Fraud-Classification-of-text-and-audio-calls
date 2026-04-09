@@ -74,11 +74,18 @@ def load_hindi_call_model_improved() -> Tuple[Any, Any, bool]:
 
 @st.cache_resource
 def load_telugu_call_model_improved() -> Tuple[Any, Any, bool]:
-    """Load improved Telugu Call model (Logistic Regression + TF-IDF)"""
+    """Load improved Telugu Call model (Logistic Regression + TF-IDF with SMOTE)"""
     try:
-        model = joblib.load('telugu_call_model_sklearn.pkl')
-        vectorizer = joblib.load('telugu_call_vectorizer.pkl')
-        return model, vectorizer, True
+        # Try to load improved v2 model first
+        try:
+            model = joblib.load('telugu_call_model_improved_v2.pkl')
+            vectorizer = joblib.load('telugu_call_vectorizer_improved_v2.pkl')
+            return model, vectorizer, True
+        except FileNotFoundError:
+            # Fallback to original
+            model = joblib.load('telugu_call_model_sklearn.pkl')
+            vectorizer = joblib.load('telugu_call_vectorizer.pkl')
+            return model, vectorizer, True
     except FileNotFoundError:
         st.warning("⚠️ Improved Telugu Call model not found.")
         return None, None, False  # type: ignore
@@ -243,6 +250,18 @@ with tab2:
                     st.success(f"✅ Speech recognized successfully!")
                     st.info(f"**Transcribed Text:** {call_transcript}")
                     
+                    # Warning about speech-to-text accuracy
+                    with st.expander("⚠️ Note about accuracy"):
+                        st.warning("""
+                        **Speech-to-Text Accuracy:** The transcription quality depends on:
+                        - Audio clarity and background noise
+                        - Speaker accent and speech speed
+                        - Language model training data
+                        
+                        If classification seems incorrect, please check the transcribed text above.
+                        You can manually edit it for more accurate predictions.
+                        """)
+                    
                     # Now classify the transcript
                     if call_language == "english":
                         # Load improved English Call Model
@@ -317,9 +336,12 @@ with tab2:
                             # Vectorize text
                             text_vec = vectorizer.transform([call_transcript])
                             
-                            # Predict
+                            # Predict with optimized threshold
                             probability = model.predict_proba(text_vec)[0][1]
-                            is_fraud = probability >= 0.5
+                            
+                            # OPTIMIZED THRESHOLD: 0.30 (lower for better fraud detection)
+                            OPTIMAL_THRESHOLD_TELUGU = 0.30
+                            is_fraud = probability >= OPTIMAL_THRESHOLD_TELUGU
                             label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
                             
                             # Display results
