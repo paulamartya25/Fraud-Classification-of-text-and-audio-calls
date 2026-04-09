@@ -2,18 +2,24 @@ import os
 import joblib
 import pickle
 import pandas as pd
-import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, accuracy_score
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 import speech_recognition as sr
+
+# Try to import TensorFlow (optional)
+try:
+    import tensorflow as tf
+    from tensorflow.keras.models import Sequential, load_model
+    from tensorflow.keras.preprocessing.text import Tokenizer
+    from tensorflow.keras.preprocessing.sequence import pad_sequences
+    from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
 
 # -------------------- Constants --------------------
 
