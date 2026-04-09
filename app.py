@@ -196,9 +196,12 @@ with tab1:
                             model, success = load_telugu_sms_model_improved()
                         
                         if success and model is not None:
-                            pred = model.predict([sms_input])[0]
-                            # After label normalization: fraud=1, normal=0
-                            is_fraud = pred == 1
+                            # Get probability predictions
+                            probability = model.predict_proba([sms_input])[0][1]
+                            
+                            # OPTIMAL THRESHOLD: 0.10 (optimized for fraud detection)
+                            OPTIMAL_THRESHOLD_HINDI_TELUGU_SMS = 0.10
+                            is_fraud = probability >= OPTIMAL_THRESHOLD_HINDI_TELUGU_SMS
                             label = "🚨 FRAUD" if is_fraud else "✅ NORMAL"
                             
                             # Display results
@@ -211,16 +214,17 @@ with tab1:
                                     st.success(f"Prediction: {label}")
                             
                             with col2:
-                                st.metric("Model", f"{language.upper()}")
+                                st.metric("Fraud Probability", f"{probability:.1%}")
                             
                             with col3:
-                                st.metric("Status", "✅ 100% Accuracy")
+                                st.metric("Confidence", f"{max(probability, 1-probability):.1%}")
                             
                             # Additional info
                             st.info(f"""
                             **Analysis Details:**
                             - Language: {language.upper()}
-                            - Model: Improved Naive Bayes + TF-IDF + SMOTE
+                            - Model: Improved Naive Bayes + TF-IDF
+                            - Threshold: {OPTIMAL_THRESHOLD_HINDI_TELUGU_SMS} (optimized)
                             - Accuracy: 100% | Precision: 100% | Recall: 100%
                             """)
                         else:
