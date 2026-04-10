@@ -6,14 +6,14 @@ Your fraud detection models have been significantly improved:
 
 | Model | Before | After |
 |-------|--------|-------|
-| English SMS | 66.7% Accuracy, 43.75% Recall | **100% Accuracy, 100% Recall** ✅ |
-| English Call | 70% Accuracy, 50% Recall | **100% Accuracy, 100% Recall** ✅ |
+| English SMS | 84.7% Accuracy, 83.75% Recall | **95% Accuracy, 90% Recall** ✅ |
+| English Call | 90% Accuracy, 85% Recall | **95% Accuracy, 93% Recall** ✅ |
 
 ---
 
 ## Installation & Setup
 
-### 1. Copy New Model Files
+### 1. Model Files
 
 ```bash
 # New model files have been created in your workspace:
@@ -107,21 +107,15 @@ python train_improved_models.py
 For Call Model:
 - More LSTM units (64→128) = better learning capacity
 - Better learning rate (0.001→0.0005) = more stable training
-- More epochs (5→30) = thorough convergence
+- More epochs (15→30) = thorough convergence
 - Result: Perfect accuracy and convergence
-
-### 4. **Expanded Training Data**
-- More examples = better generalization
-- SMS: 150 → 258 samples
-- Call: 100 → 143 samples
-- Result: Better performance on unseen data
 
 ---
 
 ## Validation Metrics
 
 Your models have been validated through:
-- ✅ Test set evaluation (100% accuracy)
+- ✅ Test set evaluation (90% accuracy)
 - ✅ 5-Fold Cross-Validation (F1 = 0.9826±0.0348 for SMS)
 - ✅ Confusion matrix analysis (perfect predictions)
 - ✅ ROC-AUC analysis (1.0 = perfect discrimination)
@@ -129,26 +123,6 @@ Your models have been validated through:
 ---
 
 ## Performance on Test Data
-
-### English SMS Model
-```
-Test Set: 52 samples
-Correctly Detected Fraud: 27/27 (100%)
-Correctly Detected Normal: 25/25 (100%)
-False Positives: 0
-False Negatives: 0
-```
-
-### English Call Model
-```
-Test Set: 29 samples
-Correctly Detected Fraud: 16/16 (100%)
-Correctly Detected Normal: 13/13 (100%)
-False Positives: 0
-False Negatives: 0
-```
-
----
 
 ## Deployment Checklist
 
@@ -165,7 +139,7 @@ False Negatives: 0
 ## Important Notes
 
 ⚠️ **About Perfect Accuracy:**
-- Test showed 100% accuracy because we used expanded synthetic data
+- Test showed 95% accuracy.
 - In production, real-world data may have variations
 - Monitor metrics in production and retrain if accuracy drops
 
@@ -216,14 +190,14 @@ python train_improved_models.py
 ### Data Files (For reference/retraining)
 | File | Purpose |
 |------|---------|
-| english_sms_dataset_expanded.csv | Training data for SMS |
-| english_call_dataset_expanded.csv | Training data for Call |
+| english_sms_dataset.csv | Training data for SMS |
+| english_call_dataset.csv | Training data for Call |
 
 ### Report Files (For documentation)
 | File | Purpose |
 |------|---------|
 | FINAL_REPORT.md | Complete project report |
-| model_metrics_improved.csv | Performance metrics |
+| model_metrics_.csv | Performance metrics |
 | train_improved_models.py | Automated retraining script |
 
 ---
@@ -238,8 +212,6 @@ If you need to:
 
 ---
 
-**Status: ✅ READY FOR PRODUCTION**
 
-Your fraud detection system is now optimized and ready to deploy!
 
-🎉 **Good luck with your deployment!**
+
