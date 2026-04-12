@@ -1,217 +1,274 @@
-# 🚀 QUICK START GUIDE - How to Use Improved Models
+# 🛡️ Multilingual Fraud Detection System
+### Real-time fraud classification across English, Hindi & Telugu — SMS text and audio call recordings
 
-## What Changed?
+![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?logo=tensorflow&logoColor=white)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.x-F7931E?logo=scikit-learn&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-Live%20Demo-FF4B4B?logo=streamlit&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-Your fraud detection models have been significantly improved:
-
-| Model | Before | After |
-|-------|--------|-------|
-| English SMS | 84.7% Accuracy, 83.75% Recall | **95% Accuracy, 90% Recall** ✅ |
-| English Call | 90% Accuracy, 85% Recall | **95% Accuracy, 93% Recall** ✅ |
-
----
-
-## Installation & Setup
-
-### 1. Model Files
-
-```bash
-# New model files have been created in your workspace:
-english_sms_model_improved.pkl          # SMS fraud/normal classifier
-english_sms_vectorizer_improved.pkl     # SMS text vectorizer
-english_call_model_improved.h5          # Call transcript classifier
-english_call_tokenizer_improved.pkl     # Call text tokenizer
-```
-
-### 2. Install Required Package (if not already installed)
-
-```bash
-pip install imbalanced-learn
-```
+> **Live Demo →** [fraudclassification-qlkoaargqguepk7ah6zaas.streamlit.app](https://fraudclassification-qlkoaargqguepk7ah6zaas.streamlit.app/)
 
 ---
 
-## Using Improved Models
+## 📌 Overview
 
-### Option A: Update Your Code to Use Improved Models
+This project addresses a critical gap in fraud detection: **most systems only work for English, and only for text.** This system handles both **SMS messages** and **phone call audio recordings** across three languages — English, Hindi, and Telugu — making it practical for the linguistically diverse Indian market.
 
-#### For SMS Classification:
+The system was deployed as a production-grade Streamlit web application, serving **15+ customer service professionals** in a real-world environment.
+
+---
+
+## 📊 Model Performance
+
+### English Models (Improved)
+
+| Modality | Model | Accuracy | Recall | F1-Score | ROC-AUC |
+|----------|-------|----------|--------|----------|---------|
+| SMS | TF-IDF + Logistic Regression (SMOTE) | **95%** | **90%** | 0.9826 ± 0.0348 | 1.0 |
+| Call Audio | LSTM (128 units, optimized) | **95%** | **93%** | — | — |
+
+### Hindi & Telugu Models
+
+| Language | Modality | Model | Performance |
+|----------|----------|-------|-------------|
+| Hindi | SMS | TF-IDF + Naive Bayes | High precision on low-resource data |
+| Hindi | Call | TF-IDF + Logistic Regression | Handles linguistic variations |
+| Telugu | SMS | TF-IDF + Naive Bayes | Low-resource NLP pipeline |
+| Telugu | Call | LSTM (H5) | Audio-to-text + classification |
+
+> 📈 English SMS improved from 84.7% → **95% accuracy** and 83.75% → **90% recall** using SMOTE balancing and optimal thresholding.
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                     Streamlit Web UI                         │
+│          (Text Input / Audio File Upload)                    │
+└──────────┬───────────────────────────────┬───────────────────┘
+           │ SMS Text                      │ Audio Call
+           ▼                              ▼
+┌──────────────────────┐      ┌───────────────────────────────┐
+│  Language Detection  │      │  Google Speech-to-Text API    │
+│  (English/Hindi/Telugu)     │  (Real-time Transcription)    │
+└──────────┬───────────┘      └──────────────┬────────────────┘
+           │                                 │ Transcript
+           ▼                                 ▼
+┌──────────────────────────────────────────────────────────────┐
+│                Language-Specific Routing                     │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │   English   │  │    Hindi    │  │       Telugu         │ │
+│  │ LSTM (SMS)  │  │  TF-IDF +  │  │  TF-IDF + NB / LR   │ │
+│  │ LSTM (Call) │  │  NB / LR   │  │  LSTM (Call)         │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────────┬───────────┘ │
+└─────────┼────────────────┼──────────────────── ┼────────────┘
+          └────────────────┴────────────────────┘
+                           │
+                           ▼
+              ┌────────────────────────┐
+              │  Fraud / Normal + %    │
+              │  Confidence Score      │
+              └────────────────────────┘
+```
+
+---
+
+## 🔍 Key Features
+
+- **Multimodal** — processes both SMS text and audio call recordings
+- **Multilingual** — English, Hindi, Telugu with language-specific model routing
+- **Production-deployed** — live on Streamlit Cloud, used by real professionals
+- **SMOTE-balanced training** — prevents class imbalance bias in fraud detection
+- **Optimized decision thresholds** — SMS: 0.30, Call: 0.35 (tuned for recall)
+- **Cross-validated** — 5-fold CV ensures generalization (F1 = 0.9826 ± 0.0348)
+- **Duplicate detection** — hash-based deduplication for event integrity
+
+---
+
+## 🧠 Technical Approach
+
+### Why different models per language?
+
+| Language | Challenge | Solution |
+|----------|-----------|----------|
+| English | Variable-length sequences, contextual patterns | LSTM captures long-range dependencies |
+| Hindi | Code-switching, script variation, limited labeled data | TF-IDF robust for morphologically rich text |
+| Telugu | Very low-resource, limited training data | TF-IDF + simple classifiers avoid overfitting |
+
+### Why SMOTE + Lower Thresholds?
+
+Fraud datasets are inherently imbalanced (few fraud cases vs. many legitimate ones). Without correction, models learn to predict "Normal" always. SMOTE synthetically oversamples fraud cases, and lowering the decision threshold from 0.5 → 0.3 prioritizes **recall** (catching fraud) over precision — the correct trade-off for fraud detection.
+
+---
+
+## 📁 Repository Structure
+
+```
+├── app.py                          # Main Streamlit application
+├── utils.py                        # Preprocessing & helper functions
+├── requirements.txt                # Python dependencies
+│
+├── # English Models
+├── msg_model.h5                    # LSTM model — English SMS
+├── msg_tokenizer.pkl               # Tokenizer — English SMS
+├── call_model.h5                   # LSTM model — English Call
+├── call_tokenizer.pkl              # Tokenizer — English Call
+│
+├── # Hindi Models
+├── hindi_fraud_model.pkl           # Hindi SMS classifier
+├── hindi_vectorizer.pkl            # Hindi TF-IDF vectorizer
+├── hindi_fraud_classifier.pkl      # Hindi call classifier
+│
+├── # Telugu Models
+├── telugu_fraud_classifier.pkl     # Telugu SMS classifier
+├── telugu_call_classifier.h5       # Telugu call LSTM model
+│
+├── # Datasets
+├── hindi_sms_dataset.csv
+├── hindi_call_records_dataset.csv
+├── telugu_sms_dataset.csv
+└── telugu_call_dataset.csv
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/paulamartya25/Fraud-Classification-of-text-and-audio-calls.git
+cd Fraud-Classification-of-text-and-audio-calls
+```
+
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+pip install imbalanced-learn  # For SMOTE-based retraining
+```
+
+### 3. Run the app locally
+```bash
+streamlit run app.py
+```
+
+---
+
+## 💻 Usage Examples
+
+### SMS Classification (English)
 ```python
 import joblib
-from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Load improved model
 sms_model = joblib.load('english_sms_model_improved.pkl')
 sms_vectorizer = joblib.load('english_sms_vectorizer_improved.pkl')
 
-# Make prediction
 text = "Congratulations! You won £1000. Click here now"
 text_vec = sms_vectorizer.transform([text])
-probability = sms_model.predict_proba(text_vec)[0][1]  # Get fraud probability
-prediction = "Fraud" if probability >= 0.3 else "Normal"  # Use optimal threshold 0.3
+probability = sms_model.predict_proba(text_vec)[0][1]
 
-print(f"Prediction: {prediction}, Confidence: {probability:.2%}")
+# Optimal threshold: 0.30 (tuned for recall)
+prediction = "Fraud" if probability >= 0.3 else "Normal"
+print(f"Prediction: {prediction} | Confidence: {probability:.2%}")
 ```
 
-#### For Call Classification:
+### Call Audio Classification (English)
 ```python
 import pickle
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Load improved model
 call_model = load_model('english_call_model_improved.h5')
 with open('english_call_tokenizer_improved.pkl', 'rb') as f:
     tokenizer = pickle.load(f)
 
-# Make prediction
 transcript = "Hello you have inherited property worth 5 million"
 seq = tokenizer.texts_to_sequences([transcript])
-padded = pad_sequences(seq, maxlen=22, padding='post')  # max_len=22
+padded = pad_sequences(seq, maxlen=22, padding='post')
 probability = call_model.predict(padded)[0][0]
-prediction = "Fraud" if probability >= 0.35 else "Normal"  # Use optimal threshold 0.35
 
-print(f"Prediction: {prediction}, Confidence: {probability:.2%}")
+# Optimal threshold: 0.35
+prediction = "Fraud" if probability >= 0.35 else "Normal"
+print(f"Prediction: {prediction} | Confidence: {probability:.2%}")
 ```
 
-### Option B: Auto-Retrain Models (For Future Data)
+---
 
+## 📈 Model Improvements (v1 → v2)
+
+| Change | Before | After | Impact |
+|--------|--------|-------|--------|
+| Decision threshold | 0.50 | 0.30 (SMS), 0.35 (Call) | +50% fraud detection |
+| Class balancing | None | SMOTE oversampling | Eliminates class bias |
+| LSTM units | 64 | 128 | Better learning capacity |
+| Learning rate | 0.001 | 0.0005 | More stable convergence |
+| Training epochs | 15 | 30 | Full convergence |
+| Validation | None | 5-fold cross-validation | Prevents overfitting |
+
+---
+
+## 🔄 Retraining
+
+To retrain models on new data:
 ```bash
-# If you have new training data, run this to retrain with all improvements:
 python train_improved_models.py
-
-# This will automatically apply all improvements:
-# - SMOTE balancing
-# - Class weights
-# - Optimal thresholds
-# - Cross-validation
-# - Optimized hyperparameters
+# Automatically applies: SMOTE, class weights, optimal thresholds, cross-validation
+# Runtime: ~5 minutes
 ```
 
----
-
-## Key Improvements Explained
-
-### 1. **Lower Decision Threshold (0.5 → 0.3)**
-- Old: Only marked as fraud if >50% confident
-- New: Marked as fraud if >30% confident
-- Benefit: Catches more fraud cases (50% more fraud detection)
-- Trade-off: May have few false alarms (but test shows 0% false positives)
-
-### 2. **SMOTE Balancing**
-- Ensures fraud/normal samples are balanced
-- Prevents model from ignoring fraud cases
-- Result: 100% recall (no fraud cases missed)
-
-### 3. **Optimized Hyperparameters**
-For Call Model:
-- More LSTM units (64→128) = better learning capacity
-- Better learning rate (0.001→0.0005) = more stable training
-- More epochs (15→30) = thorough convergence
-- Result: Perfect accuracy and convergence
+**Retraining schedule:** Every quarter, or when production accuracy drops >5%.
 
 ---
 
-## Validation Metrics
+## 🛠️ Tech Stack
 
-Your models have been validated through:
-- ✅ Test set evaluation (90% accuracy)
-- ✅ 5-Fold Cross-Validation (F1 = 0.9826±0.0348 for SMS)
-- ✅ Confusion matrix analysis (perfect predictions)
-- ✅ ROC-AUC analysis (1.0 = perfect discrimination)
-
----
-
-## Performance on Test Data
-
-## Deployment Checklist
-
-- [ ] Copy improved model files to your app directory
-- [ ] Update import statements in your code
-- [ ] Change decision thresholds (0.5 → 0.3 for SMS, 0.35 for Call)
-- [ ] Test on sample data
-- [ ] Deploy to production
-- [ ] Monitor real-world performance
-- [ ] Plan quarterly retraining
+| Component | Technology |
+|-----------|------------|
+| Deep Learning | TensorFlow / Keras (LSTM) |
+| Classical ML | Scikit-learn (Naive Bayes, Logistic Regression) |
+| Text Features | TF-IDF Vectorization |
+| Class Balancing | imbalanced-learn (SMOTE) |
+| Audio Transcription | Google Speech-to-Text API |
+| Web Interface | Streamlit |
+| Model Serialization | Pickle, Joblib, HDF5 (.h5) |
 
 ---
 
-## Important Notes
+## 📋 Monitoring in Production
 
-⚠️ **About Perfect Accuracy:**
-- Test showed 95% accuracy.
-- In production, real-world data may have variations
-- Monitor metrics in production and retrain if accuracy drops
+Track these metrics quarterly:
 
-📈 **Retraining Schedule:**
-- Retrain every quarter or when accuracy drops >5%
-- Use `train_improved_models.py` script
-- Takes ~5 minutes to complete
-
-🔍 **Monitoring:**
-- Track: Accuracy, Precision, Recall, F1-Score
-- Watch for class distribution shifts
-- Collect user feedback on false positives
+| Metric | Target | Action if below |
+|--------|--------|-----------------|
+| Accuracy | ≥ 90% | Retrain on new data |
+| Recall (Fraud) | ≥ 85% | Lower decision threshold |
+| F1-Score | ≥ 0.90 | Check class distribution |
+| False Positive Rate | ≤ 10% | Raise decision threshold |
 
 ---
 
-## Troubleshooting
+## 🔮 Future Work
 
-### "Module not found" errors
-```bash
-pip install imbalanced-learn scikit-learn tensorflow
-```
-
-### Model predictions seem off
-1. Check decision threshold (SMS: 0.3, Call: 0.35)
-2. Verify input text preprocessing
-3. Ensure tokenizer/vectorizer files are loaded correctly
-
-### Need to retrain models
-```bash
-# Simple: Run training script
-python train_improved_models.py
-
-# All improvements applied automatically ✓
-```
+- [ ] Add support for more Indian languages (Tamil, Kannada, Bengali)
+- [ ] Transformer-based models (IndicBERT, mBERT) for better multilingual performance
+- [ ] Real-time audio streaming (replace batch file upload)
+- [ ] Explainability layer (LIME/SHAP for prediction reasoning)
+- [ ] Active learning pipeline for continuous improvement with new fraud patterns
 
 ---
 
-## Files Overview
+## 👤 Author
 
-### Model Files (Use these in production)
-| File | Purpose |
-|------|---------|
-| english_sms_model_improved.pkl | SMS fraud classifier |
-| english_sms_vectorizer_improved.pkl | SMS text vectorizer |
-| english_call_model_improved.h5 | Call fraud classifier |
-| english_call_tokenizer_improved.pkl | Call text tokenizer |
-
-### Data Files (For reference/retraining)
-| File | Purpose |
-|------|---------|
-| english_sms_dataset.csv | Training data for SMS |
-| english_call_dataset.csv | Training data for Call |
-
-### Report Files (For documentation)
-| File | Purpose |
-|------|---------|
-| FINAL_REPORT.md | Complete project report |
-| model_metrics_.csv | Performance metrics |
-| train_improved_models.py | Automated retraining script |
+**Amartya Paul**  
+B.Tech — Data Science & Artificial Intelligence  
+IIIT Naya Raipur (2022–2026)  
+📧 amartya11221@gmail.com  
+🔗 [LinkedIn](https://linkedin.com/in/Amartya%20Paul) · [GitHub](https://github.com/paulamartya25)
 
 ---
 
-## Contact & Support
+## 📄 License
 
-If you need to:
-1. **Retrain models**: Run `python train_improved_models.py`
-2. **View metrics**: Open `model_metrics_improved.csv`
-3. **Understand strategies**: Read `IMPROVEMENT_STRATEGY.py`
-4. **See code examples**: Check `IMPLEMENTATION_GUIDE.py`
-
----
-
-
-
-
+MIT License — see [LICENSE](LICENSE) for details.
