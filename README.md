@@ -1,4 +1,9 @@
 # 🛡️ Multilingual Fraud Detection System
+
+![MINOR_6_4](https://github.com/user-attachments/assets/44a2b3af-7312-4336-bd15-79546468f37c)
+![MINOR_6_3](https://github.com/user-attachments/assets/71152e9e-dced-485d-87ec-ebefef9b4307)
+![MINOR_6_1](https://github.com/user-attachments/assets/99c7650d-f9e9-4727-9a91-7ce06437ca95)
+
 ### Real-time fraud classification across English, Hindi & Telugu — SMS text and audio call recordings
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)
@@ -265,7 +270,7 @@ Track these metrics quarterly:
 B.Tech — Data Science & Artificial Intelligence  
 IIIT Naya Raipur (2022–2026)  
 📧 amartya11221@gmail.com  
-🔗 [LinkedIn](https://linkedin.com/in/Amartya%20Paul) · [GitHub](https://github.com/paulamartya25)
+🔗 [LinkedIn]() · [GitHub](https://github.com/paulamartya25)
 
 ---
 
